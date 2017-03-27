@@ -51,7 +51,7 @@ namespace Polynomial
         }
 
         /// <summary>
-        /// Constructor that gets params and variable symbol
+        /// Constructor that gets params and variable symbol 
         /// </summary>
         /// <param name="coefficients">Coefficients of polynom</param>
         /// <param name="variableSymbol">The symbol that determines a text display of polynom variable</param>

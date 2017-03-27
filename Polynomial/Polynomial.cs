@@ -226,6 +226,22 @@ namespace Polynomial
             return Multiplication(this, polynom);
         }
 
+
+        public static Polynomial operator +(Polynomial a, Polynomial b)
+        {
+            return Polynomial.Addition(a, b);
+        }
+
+        public static Polynomial operator -(Polynomial a, Polynomial b)
+        {
+            return Polynomial.Subtraction(a, b);
+        }
+
+        public static Polynomial operator *(Polynomial a, Polynomial b)
+        {
+            return Polynomial.Multiplication(a, b);
+        }
+
         /// <summary>
         /// Construct a new double array by doing the operation with elements of two double arrays
         /// </summary>
@@ -269,19 +285,5 @@ namespace Polynomial
             return result;
         }
 
-        public static Polynomial operator +(Polynomial a, Polynomial b)
-        {
-            return Polynomial.Addition(a, b);
-        }
-
-        public static Polynomial operator -(Polynomial a, Polynomial b)
-        {
-            return Polynomial.Subtraction(a, b);
-        }
-
-        public static Polynomial operator *(Polynomial a, Polynomial b)
-        {
-            return Polynomial.Multiplication(a, b);
-        }
     }
 }

@@ -41,6 +41,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BubbleSortForMatrix.cs" />
+    <Compile Include="ByMaxElementComparator.cs" />
+    <Compile Include="ByMaxElementReverseComparator.cs" />
+    <Compile Include="ByMinElementComparator.cs" />
+    <Compile Include="ByMinElementReverseComparator.cs" />
+    <Compile Include="BySumComparator.cs" />
+    <Compile Include="BySumReverseComparator.cs" />
+    <Compile Include="IComparator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

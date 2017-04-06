@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Configuration;
+using System.Globalization;
 
 namespace Polynomial
 {
@@ -19,14 +21,23 @@ namespace Polynomial
         public double[] Coefficients { get; }
 
         /// <summary>
-        /// The symbol that determines a text display of polynom variable
-        /// </summary>
-        public char VariableSybmol { get; }
-
-        /// <summary>
         /// The Degree of polynom
         /// </summary>
-        public int Degree => Coefficients.Length;
+        public int Degree
+        {
+            get
+            {
+                for (int i = Coefficients.Length - 1; i >= 0; i--)
+                    if (Math.Abs(Coefficients[i]) > Epsilon)
+                        return i;
+
+                return -1;
+            }
+        }
+
+        public static char VariableSymbol { get; }
+
+        public static double Epsilon { get; }
 
         private enum Operation
         {
@@ -35,11 +46,18 @@ namespace Polynomial
             Multiplication
         };
 
+        static Polynomial()
+        {
+            string epsilonString = ConfigurationManager.AppSettings["epsilon"];
+            string variableSymbol = ConfigurationManager.AppSettings["variableSymbol"];
+
+            Epsilon = double.Parse(epsilonString, CultureInfo.InvariantCulture);
+            VariableSymbol = char.Parse(variableSymbol);
+        }
         /// <summary>
         /// Constructor that gets params
         /// </summary>
         /// <param name="coefficients">Coefficients of polynom</param>
-        /// <param name="variableSymbol">The symbol that determines a text display of polynom variable</param>
         public Polynomial(params double[] coefficients)
         {
             if (coefficients.Any(value =>
@@ -47,26 +65,6 @@ namespace Polynomial
                 double.IsInfinity(value)))
                 throw new ArgumentException("One of the element is NaN or Infinity");
             Coefficients = coefficients;
-            VariableSybmol = 'x';
-        }
-
-        /// <summary>
-        /// Constructor that gets params and variable symbol 
-        /// </summary>
-        /// <param name="coefficients">Coefficients of polynom</param>
-        /// <param name="variableSymbol">The symbol that determines a text display of polynom variable</param>
-        public Polynomial(char variableSymbol, params double[] coefficients)
-        {
-            if (coefficients.Any(value => 
-                double.IsNaN(value) || 
-                double.IsInfinity(value)))
-                throw new ArgumentException("One of the element is NaN or Infinity");
-            Coefficients = coefficients;
-
-            if (variableSymbol < 'a' || variableSymbol > 'z')
-                throw new ArgumentException("variableSymbol is not correct");
-
-            VariableSybmol = variableSymbol;
         }
 
         /// <summary>
@@ -98,7 +96,7 @@ namespace Polynomial
 
                 // We don't need a variable symbol if it's a zero-degree member
                 if (i != 0)
-                    stringBuilder.Append(VariableSybmol);
+                    stringBuilder.Append(VariableSymbol);
 
                 // We don't need a degree if it's a zero- or one-degree member
                 if (i == 1 || i == 0)
@@ -112,48 +110,55 @@ namespace Polynomial
         }
 
         /// <summary>
-        /// Overloaded method GetHashCoed
+        /// Overrided method GetHashCoed
         /// </summary>
         /// <returns>Hash code of instance</returns>
         public override int GetHashCode()
         {
-            int result = VariableSybmol.GetHashCode();
-            int hashCoef = 33;
+            if (Coefficients == null)
+                return 0;
+
+            double result = 0;
+            int hashCoef = 11;
 
             for (int i = 0; i < Coefficients.Length; i++)
-                result +=  (int)(Coefficients[i] * Math.Pow(hashCoef, Degree - i));
+                result += Coefficients[i] * Math.Pow(hashCoef, Degree - i);
             
-            return result;
+            return (int)(result * VariableSymbol.GetHashCode());
         }
 
         public override bool Equals(object obj)
         {
-            if (obj == null)
-                return false;
+            if (ReferenceEquals(obj, null)) return false;
+            if (ReferenceEquals(this, obj)) return true;
 
             Polynomial p = obj as Polynomial;
-            if ((object) p == null)
-                return false;
 
-            double[] minArr = p.Coefficients.Length > this.Coefficients.Length
-                ? this.Coefficients
-                : p.Coefficients;
-            double[] maxArr = p.Coefficients.Length > this.Coefficients.Length
-                ? p.Coefficients
-                : this.Coefficients;
-            for (int i = 0; i < minArr.Length; i++)
+            return p != null && this.Equals(p);
+        }
+
+        public bool Equals(Polynomial p)
+        {
+            if (ReferenceEquals(null, p)) return false;
+            if (ReferenceEquals(this, p)) return true;
+
+            int i;
+            for (i = 0; i < this.Coefficients.Length; i++)
             {
-                if (Math.Abs(this.Coefficients[i] - p.Coefficients[i]) > 0.00000001)
+                if (Math.Abs(this.Coefficients[i] - p.Coefficients[i]) > Epsilon)
                     return false;
             }
 
-            for (int i = minArr.Length; i < maxArr.Length; i++)
+            double[] max = this.Coefficients.Length > p.Coefficients.Length ? this.Coefficients : p.Coefficients;
+            
+            for (; i < max.Length; i++)
             {
-                if (Math.Abs(maxArr[i]) > double.Epsilon)
+                if (Math.Abs(max[i]) > Epsilon)
                     return false;
             }
 
             return true;
+
         }
 
         /// <summary>
@@ -279,7 +284,7 @@ namespace Polynomial
 
                     for (int i = minArr.Length; i < maxArr.Length; i++)
                         result[i] = maxArr == a ? maxArr[i] : -maxArr[i]; 
-                    break;;
+                    break;
             }
 
             return result;
